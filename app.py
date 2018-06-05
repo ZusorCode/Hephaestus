@@ -206,5 +206,3 @@ def login_check():
 
 if __name__ == '__main__':
     app.run()
-
-# Irgendeine Veränderung
