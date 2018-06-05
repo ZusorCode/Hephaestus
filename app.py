@@ -58,6 +58,9 @@ def do_login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        if request.form.get("remember_me"):
+            if request.form["remember_me"] == "on":
+                session.permanent = True
         if user_info.check_password(username, password):
             session["logged_in"] = True
             session["username"] = username
