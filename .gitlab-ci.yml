@@ -1,0 +1,9 @@
+stages:
+- deploy
+deploy_job:
+  stage: deploy
+  script:
+  - sudo pkill gunicorn
+  - cd /home/tobi/hephaestus
+  - git pull
+  - gunicorn -b 127.0.0.1:6000 app:app --daemon
