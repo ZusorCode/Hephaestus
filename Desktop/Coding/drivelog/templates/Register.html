@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='register.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+
+<nav>
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo center">Logo</a>
+    </div>
+</nav>
+<form action="/do_register" method="post" autocomplete="off">
+    <div class="container">
+        <div class="input-field col s12">
+            <input name="username" id="username" type="text" class="validate" required="" aria-required="true">
+            <label for="username">Username</label>
+            <span class="helper-text" data-error="We need a username so that you can log in" data-success=""> </span>
+        </div>
+        <div class="input-field col s12">
+            <input name="email" id="email" type="email" class="validate" required="" aria-required="true">
+            <label for="email">Email address</label>
+            <span class="helper-text" data-error="We need your email address in case you forget your password"
+                  data-success=""></span>
+        </div>
+        <div class="row">
+            <div class="input-field col s6">
+                <input name="password" id="password" type="password" class="validate" required="" aria-required="true">
+                <label for="password">Password</label>
+                <span class="helper-text" data-error="We need this so hackers can't access your driving records"
+                      data-success=""></span>
+            </div>
+            <div class="input-field col s6">
+                <input name="password_repeat" id="password_repeat" type="password" class="validate" required="" aria-required="true">
+                <label for="password_repeat">Repeat password</label>
+                <span class="helper-text" data-error="We need to make sure that you gave us the correct password"
+                      data-success=""></span>
+            </div>
+        </div>
+        <p>Already have an account? <a href="/login">Log in</a></p>
+        <button class="btn waves-effect waves-light" type="submit" name="action">Register
+            <i class="material-icons right">send</i>
+        </button>
+    </div>
+</form>
+{% if error == "username" %}
+<script>
+    M.toast({html: 'Sorry! That username is already taken', displayLength: 5000});
+</script>
+{% elif error == "email" %}
+<script>
+    M.toast({html: 'That email was already used to sign up', displayLength: 5000});
+</script>
+{% elif error == "password" %}
+<script>
+    M.toast({html: 'The passwords did not match', displayLength: 5000});
+</script>
+{% endif %}
+
+</body>
+</html>

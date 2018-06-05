@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='home.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='circle.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body onload="onload()">
+
+<nav class="nav-extended">
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo center">Logo</a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div>
+    <div class="nav-content">
+        <ul class="tabs tabs-transparent" id="tablist">
+            <li class="tab"><a href="#drive">Drive</a></li>
+            <li class="tab"><a href="#stats">Stats</a></li>
+            <li class="tab"><a href="#edit">Edit</a></li>
+            <li class="tab"><a href="#settings">Settings</a></li>
+        </ul>
+    </div>
+</nav>
+
+<ul class="sidenav" id="mobile-demo">
+    <li><a href="/logout">Logout</a></li>
+</ul>
+
+<div id="drive" class="col s12">
+    <div class="container">
+        <div class="center_it">
+            <h1 id="timerDisplay">00:00:00</h1>
+            <p><a class="waves-effect waves-light btn" id="startbutton" onclick="startTimer();">Start</a>
+                <a class="btn disabled" id="stopbutton" onclick="stopTimer()">Stop</a></p>
+        </div>
+    </div>
+</div>
+
+<div id="stats" class="col s12">Stats</div>
+
+<div id="edit" class="col s12">
+    <div id="table">
+    </div>
+</div>
+
+<div id="settings" class="col s12">
+    <div class="container">
+        <form action="/change_settings" autocomplete="off" method="post">
+            <br>
+            <div class="input-field col s12">
+                <input value="{{ time_goal }}" name="time_goal" type="text" class="datepicker" id="time_goal">
+                <label for="time_goal">When do you want to be done with your goal</label>
+
+            </div>
+
+            <div class="row">
+
+                <div class="input-field col s6">
+                    <input value="{{ goal }}" name="goal" id="goal" type="number" class="validate">
+                    <label for="goal">Goal for hours</label>
+                </div>
+
+                <div class="input-field col s6">
+                    <input value="{{ night_goal }}" name="night_goal" id="night_goal" type="number" class="validate">
+                    <label for="night_goal">Goal for night hours</label>
+                </div>
+
+            </div>
+
+            <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+                <i class="material-icons right">send</i>
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    M.AutoInit();
+    M.updateTextFields();
+</script>
+{% if error == "missing" %}
+    <script>
+        M.toast({html: "Please fill out all fields", displayLength: 5000});
+    </script>
+{% elif error == "settings_change_success" %}
+    <script>
+        M.toast({html: "Updated settings successfully", displayLength: 5000});
+    </script>
+{% elif error == "settings_change_error" %}
+    <script>
+        M.toast({html: "Updated settings successfully", displayLength: 5000});
+    </script>
+{% endif %}
+
+
+<script>
+    let currently_editing;
+
+    function update_table() {
+        autologout();
+        $.get("/get_table", function (data) {
+            document.getElementById("table").innerHTML = data;
+            M.AutoInit();
+        });
+    }
+
+    function edit(id) {
+        autologout();
+        if (currently_editing) {
+            M.toast({html: "You're already editing something!", displayLength: 5000});
+            return;
+        }
+        $.get("/get_editable_table?id=" + id, function (data) {
+            document.getElementById(id).outerHTML = data;
+            currently_editing = true;
+            M.AutoInit();
+        });
+    }
+
+    function save_edit(id) {
+        autologout();
+        let startDate = $("#startDateForm").val();
+        let startTime = $("#startTimeForm").val();
+        let stopTime = $("#stopTimeForm").val();
+        $.post("/edit_data", {startDate: startDate, startTime: startTime, stopTime: stopTime, id: id});
+        currently_editing = false;
+        update_table();
+    }
+
+    function discard_edit() {
+        autologout();
+        update_table();
+        currently_editing = false;
+    }
+
+    function delete_drive(id) {
+        autologout();
+        $.post("/delete_drive", {id: id});
+        update_table();
+        currently_editing = false;
+    }
+
+    function onload() {
+        fixTimer();
+        update_table();
+        autologout();
+    }
+
+    async function autologout() {
+        $.get("/login_check", function (data) {
+            if (data == "false") {
+                window.location = "/login"
+            }
+        })
+
+
+    }
+</script>
+
+<script>
+    let timerEnabled;
+
+    function startTimer() {
+        $("#startbutton").toggleClass("waves-effect wave-light disabled");
+        $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+        timerEnabled = true;
+        timerSetup();
+        timer();
+    }
+
+    function stopTimer() {
+        let username;
+        username = "{{ username }}";
+        $.post("/stop_drive", {username: username})
+            .done(function () {
+                update_table();
+            });
+        $("#startbutton").toggleClass("waves-effect wave-light disabled");
+        $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+        timerEnabled = false;
+        document.cookie = "startTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function fixTimer() {
+        {% if running %}
+            if (getCookie("startTime") !== "") {
+                timerEnabled = true;
+                $("#startbutton").toggleClass("waves-effect wave-light disabled");
+                $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+                timer();
+            } else if (getCookie("startTime") === "") {
+                let startTime;
+                startTime = {{ startTime }};
+                document.cookie = "startTime=" + startTime + ";expires=Wed, 1 Jan 2025 00:00:00 UTC; path=/";
+                $("#startbutton").toggleClass("waves-effect wave-light disabled");
+                $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+                timer();
+            }
+        {% endif %}
+    }
+
+    function timerSetup() {
+        let startTime;
+        let username;
+        username = "{{ username }}";
+        startTime = new Date() / 1000;
+        document.cookie = "startTime=" + startTime + ";expires=Wed, 1 Jan 2025 00:00:00 UTC; path=/";
+        $.post("/start_drive", {username: username})
+    }
+
+
+    async function timer() {
+        while (timerEnabled) {
+            await sleep(100);
+            if (timerEnabled) {
+                let currentTime;
+                let time;
+                let hours;
+                let remainder;
+                let minutes;
+                let seconds;
+                currentTime = new Date() / 1000;
+                time = Math.round(currentTime - getCookie("startTime"));
+                hours = Math.floor(time / 3600);
+                remainder = time % 3600;
+                minutes = Math.floor(remainder / 60);
+                remainder = remainder % 60;
+                seconds = remainder;
+                if (hours < 10) {
+                    hours = "0" + hours;
+                }
+                if (minutes < 10) {
+                    minutes = "0" + minutes;
+                }
+                if (seconds < 10) {
+                    seconds = "0" + seconds;
+                }
+                console.log(hours + ":" + minutes + ":" + seconds);
+                $("#timerDisplay").text(hours + ":" + minutes + ":" + seconds);
+            }
+        }
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+</script>
+</body>
+</html>

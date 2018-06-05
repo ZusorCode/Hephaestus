@@ -1,0 +1,28 @@
+<div class="container">
+    <table>
+        <thead>
+        <th>Date</th>
+        <th>Start time</th>
+        <th>Stop time</th>
+        <th>Duration</th>
+        <th>Edit</th>
+        </thead>
+        <tbody>
+        {% for drive in drives %}
+            <tr id="{{ drive["id"] }}" class="meep">
+                <td>{{ drive["startDate"] }}</td>
+                <td>{{ drive["startTime"] }}</td>
+                <td>{{ drive["stopTime"] }}</td>
+                <td>{{ drive["duration"] }}</td>
+                <td><a class="btn-flat" onclick="edit({{ drive["id"] }})"><i class="material-icons">edit</i></a></td>
+            </tr>
+            <col width="20%"/>
+            <col width="20%"/>
+            <col width="20%"/>
+            <col width="20%"/>
+            <col width="20%"/>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+

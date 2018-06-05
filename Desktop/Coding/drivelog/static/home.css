@@ -1,0 +1,10 @@
+div.center_it {
+    align-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.card-small {
+    width: 40%;
+}
+
