@@ -3,7 +3,7 @@ from pymongo import MongoClient
 import time
 import datetime
 
-client = MongoClient('mongodb://localhost:27017')
+client = MongoClient('mongodb://EngelGames:katze@195.201.156.29/drivelog')
 db = client.drivelog
 users = db.users
 

@@ -4,7 +4,7 @@ from tools import user_info
 from datetime import datetime, timedelta
 import time
 
-client = MongoClient('mongodb://localhost:27017')
+client = MongoClient('mongodb://EngelGames:katze@195.201.156.29/drivelog')
 db = client.drivelog
 users = db.users
 
