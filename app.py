@@ -135,15 +135,17 @@ def get_editable_table():
 @app.route("/edit_data", methods=["GET", "POST"])
 @login_required
 def edit_data():
+    print(request.form)
     start_date = request.form["startDate"]
     start_time = request.form["startTime"]
     stop_time = request.form["stopTime"]
     id = request.form["id"]
-    start_timestamp = datetime.strptime(f"{start_date} {start_time}", "%b %m, %Y %I:%M %p").timestamp()
-    stop_timestamp = datetime.strptime(f"{start_date} {stop_time}", "%b %m, %Y %I:%M %p").timestamp()
+    start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
+    stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
     if start_timestamp > stop_timestamp:
         stop_timestamp += timedelta(days=1)
     user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp)
+    return "True"
 
 
 @app.route("/start_drive", methods=["GET", "POST"])

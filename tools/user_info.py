@@ -2,7 +2,7 @@ import bcrypt
 from pymongo import MongoClient
 import time
 import datetime
-mongo_credentials = open("mongo.credentials")
+mongo_credentials = open("mongo.credentials", "r")
 client = MongoClient(mongo_credentials.read())
 db = client.drivelog
 users = db.users
