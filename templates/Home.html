@@ -40,7 +40,8 @@
     <div class="container">
         <div class="center_it">
             <h1 id="timerDisplay">00:00:00</h1>
-            <p><a class="waves-effect waves-light btn green lighten-1" id="startbutton" onclick="startTimer();">Start</a>
+            <p><a class="waves-effect waves-light btn green lighten-1" id="startbutton"
+                  onclick="startTimer();">Start</a>
                 <a class="btn disabled red darken-3" id="stopbutton" onclick="stopTimer()">Stop</a></p>
         </div>
     </div>
@@ -108,6 +109,29 @@
 
 <script>
     let currently_editing;
+    let timerEnabled;
+
+    function onload() {
+        fixTimer();
+        update_table();
+        autologout();
+    }
+
+    {% if running %}
+        if (getCookie("startTime") !== "") {
+            timerEnabled = true;
+            $("#startbutton").toggleClass("waves-effect wave-light disabled");
+            $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+            timer();
+        } else if (getCookie("startTime") === "") {
+            let startTime;
+            startTime = {{ startTime }};
+            document.cookie = "startTime=" + startTime + ";expires=Wed, 1 Jan 2025 00:00:00 UTC; path=/";
+            $("#startbutton").toggleClass("waves-effect wave-light disabled");
+            $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+            timer();
+        }
+    {% endif %}
 
     function update_table() {
         autologout();
@@ -153,11 +177,6 @@
         currently_editing = false;
     }
 
-    function onload() {
-        fixTimer();
-        update_table();
-        autologout();
-    }
 
     async function autologout() {
         $.get("/login_check", function (data) {
@@ -168,10 +187,7 @@
 
 
     }
-</script>
 
-<script>
-    let timerEnabled;
 
     function startTimer() {
         $("#startbutton").toggleClass("waves-effect wave-light disabled");
@@ -194,27 +210,11 @@
         document.cookie = "startTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
 
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function fixTimer() {
-        {% if running %}
-            if (getCookie("startTime") !== "") {
-                timerEnabled = true;
-                $("#startbutton").toggleClass("waves-effect wave-light disabled");
-                $("#stopbutton").toggleClass("waves-effect wave-light disabled");
-                timer();
-            } else if (getCookie("startTime") === "") {
-                let startTime;
-                startTime = {{ startTime }};
-                document.cookie = "startTime=" + startTime + ";expires=Wed, 1 Jan 2025 00:00:00 UTC; path=/";
-                $("#startbutton").toggleClass("waves-effect wave-light disabled");
-                $("#stopbutton").toggleClass("waves-effect wave-light disabled");
-                timer();
-            }
-        {% endif %}
-    }
 
     function timerSetup() {
         let startTime;
