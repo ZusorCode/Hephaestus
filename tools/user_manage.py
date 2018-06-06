@@ -4,7 +4,8 @@ from tools import user_info
 from datetime import datetime, timedelta
 import time
 
-client = MongoClient('mongodb://EngelGames:katze@195.201.156.29/drivelog')
+mongo_credentials = open("mongo.credentials")
+client = MongoClient(mongo_credentials.read())
 db = client.drivelog
 users = db.users
 
