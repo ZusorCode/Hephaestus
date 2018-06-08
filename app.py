@@ -1,9 +1,11 @@
-from flask import Flask, redirect, session, render_template, request, url_for
+import time
+from datetime import datetime, timedelta
 from functools import wraps
 from os import urandom
+
+from flask import Flask, redirect, session, render_template, request, url_for
+
 from tools import user_info, user_manage
-from datetime import datetime, timedelta
-import time
 
 app = Flask(__name__)
 app.secret_key = urandom(5000)
@@ -210,6 +212,12 @@ def change_settings():
             return redirect("/home?error=settings_change_success#settings")
         else:
             return redirect("/home?error=settings_change_error#settings")
+
+
+@app.route("/get_stats")
+@login_required
+def get_stats():
+    return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
 
 
 @app.route("/login_check")

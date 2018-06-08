@@ -1,0 +1,54 @@
+<div class="row">
+    <!--Day-goal-->
+    <div class="col s12 m6">
+        <div class="card-panel">
+            <h3>{{ stats["total_info"] }}</h3>
+            already driven
+        </div>
+    </div>
+
+    <div class="col s12 m6">
+        <div class="card-panel grey lighten-4">
+            <h3>{{ stats["total_percent"] }}</h3>
+            of your goal
+        </div>
+    </div>
+
+    <!--Night-goal-->
+    <div class="col s12 m6">
+        <div class="card-panel black">
+            <span class="white-text">
+                <h3>{{ stats["night_info"] }}</h3>
+                already driven during the night
+            </span>
+        </div>
+    </div>
+
+    <div class="col s12 m6">
+        <div class="card-panel grey darken-3">
+                    <span class="white-text">
+                        <h3>{{ stats["night_percent"] }}</h3>
+                        of your night goal
+                    </span>
+        </div>
+    </div>
+
+    <div class="col s12 m6">
+        <div class="card-panel lime darken-2">
+                    <span class="white-text">
+                            <h3>{{ stats["hours_per_week"] }}</h3>
+                            per week to hit your goal
+                    </span>
+        </div>
+    </div>
+
+    <div class="col s12 m6">
+        <div class="card-panel light-green darken-3">
+                    <span class="white-text">
+                        <h3>{{ stats["days_until_goal"] }}</h3>
+                        until your goal
+                    </span>
+        </div>
+    </div>
+
+</div>
