@@ -100,7 +100,7 @@ def get_drive_data(username):
             duration = f"{duration_hours}:{duration_minutes}:{duration_seconds}"
             drive_data.append(
                 {"startDate": format_start_date, "startTime": format_start_time, "stopTime": format_stop_time,
-                 "duration": duration, "id": drive_list.index(drive)})
+                 "duration": duration, "id": drive_list.index(drive), "conditions": drive["conditions"]})
         return drive_data
 
 
@@ -125,7 +125,7 @@ def get_drive(username, id):
             duration_seconds = "0" + str(duration_seconds)
         duration = f"{duration_hours}:{duration_minutes}:{duration_seconds}"
         return {"startDate": format_start_date, "startTime": format_start_time, "stopTime": format_stop_time,
-                "duration": duration, "id": get_drive_list(username).index(drive)}
+                "duration": duration, "id": get_drive_list(username).index(drive), "conditions": drive["conditions"]}
 
 
 def get_stats(username):

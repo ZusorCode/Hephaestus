@@ -140,12 +140,16 @@ def edit_data():
     start_date = request.form["startDate"]
     start_time = request.form["startTime"]
     stop_time = request.form["stopTime"]
+    night = request.form["night"]
+    conditions = []
+    if night == "true":
+        conditions.append("night")
     id = request.form["id"]
     start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
     stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
     if start_timestamp > stop_timestamp:
         stop_timestamp += timedelta(days=1).total_seconds()
-    user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp)
+    user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp, conditions)
     return "True"
 
 
@@ -164,9 +168,14 @@ def start_drive():
 def stop_drive():
     if request.method == "POST":
         username = request.form["username"]
+        time_mode = request.form["timemode"]
+        if time_mode == "auto":
+            if 21 <= int(datetime.now().__format__("%H")) or 5 >= int(datetime.now().__format__("%H")):
+                time_mode = "night"
+
         if username == session["username"]:
             if user_info.check_drive(username):
-                return str(user_manage.stop_drive(username))
+                return str(user_manage.stop_drive(username, time_mode))
 
 
 @app.route("/delete_drive", methods=["GET", "POST"])

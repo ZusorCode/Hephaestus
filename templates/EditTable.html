@@ -1,10 +1,11 @@
 <form action="/update_data" method="post">
     <input type="hidden" contenteditable="false" value="{{ drive["id"] }}" id="formID">
-    <col width="20%" />
-    <col width="20%" />
-    <col width="20%" />
-    <col width="20%" />
-    <col width="20%" />
+    <col width="20%"/>
+    <col width="20%"/>
+    <col width="20%"/>
+    <col width="20%"/>
+    <col width="20%"/>
+    <col width="20%"/>
     <td>
         <input type="text" class="datepicker" style="width: 90%" value="{{ drive["startDate"] }}" id="startDateForm">
         <label for="startDate">Start date</label>
@@ -17,9 +18,16 @@
         <input type="text" class="timepicker" style="width: 95%" value="{{ drive["stopTime"] }}" id="stopTimeForm">
         <label for="stopTime">Stop time</label>
     </td>
+
     <td>
         <input type="text" class="validate" style="width: 85%" disabled value="Automatically calculated">
         <label for="disabled">Duration</label>
+    </td>
+    <td>
+        <label>
+            <input type="checkbox" class="filled-in" {% if "night" in drive["conditions"] %}checked="checked"{% endif %} id="nightForm">
+            <span></span>
+        </label>
     </td>
     <td>
         <a class="btn-flat" onclick="discard_edit()"><i class="material-icons">cancel</i></a>

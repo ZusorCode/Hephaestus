@@ -5,6 +5,7 @@
         <th>Start time</th>
         <th>Stop time</th>
         <th>Duration</th>
+        <th>Night</th>
         <th>Edit</th>
         </thead>
         <tbody>
@@ -14,6 +15,12 @@
                 <td>{{ drive["startTime"] }}</td>
                 <td>{{ drive["stopTime"] }}</td>
                 <td>{{ drive["duration"] }}</td>
+                <td>
+                    <label>
+                        <input type="checkbox" class="filled-in" {% if "night" in drive["conditions"] %}checked="checked"{% endif %} disabled>
+                        <span></span>
+                    </label>
+                </td>
                 <td><a class="btn-flat" onclick="edit({{ drive["id"] }})"><i class="material-icons">edit</i></a></td>
             </tr>
             <col width="20%"/>

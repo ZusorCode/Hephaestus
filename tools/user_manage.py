@@ -44,10 +44,12 @@ def start_drive(username):
         return False
 
 
-def stop_drive(username):
+def stop_drive(username, time_mode):
     if user_info.check_username(username):
         users.update_one({"username": username}, {"$set": {"activeDrive": False}})
         users.update_one({"username": username, "drives.active": True}, {"$set": {"drives.$.stopTime": time.time()}})
+        if time_mode == "night":
+            users.update_one({"username": username, "drives.active": True}, {"$set": {"drives.$.conditions": ["night"]}})
         users.update_one({"username": username, "drives.active": True}, {"$set": {"drives.$.active": False}})
         return not user_info.check_drive(username)
     else:
@@ -63,10 +65,11 @@ def update_settings(username, time_goal, goal, night_goal):
         return False
 
 
-def update_drive(username, id, start_time, stop_time):
+def update_drive(username, id, start_time, stop_time, conditions):
     if user_info.check_username(username):
         users.update_one({"username": username}, {"$set": {f"drives.{id}.startTime": start_time}})
         users.update_one({"username": username}, {"$set": {f"drives.{id}.stopTime": stop_time}})
+        users.update_one({"username": username}, {"$set": {f"drives.{id}.conditions": conditions}})
         return True
     return False
 
