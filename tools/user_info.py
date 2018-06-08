@@ -2,6 +2,7 @@ import bcrypt
 from pymongo import MongoClient
 import time
 import datetime
+
 mongo_credentials = open("mongo.credentials", "r")
 client = MongoClient(mongo_credentials.read())
 db = client.drivelog
@@ -125,3 +126,28 @@ def get_drive(username, id):
         duration = f"{duration_hours}:{duration_minutes}:{duration_seconds}"
         return {"startDate": format_start_date, "startTime": format_start_time, "stopTime": format_stop_time,
                 "duration": duration, "id": get_drive_list(username).index(drive)}
+
+
+def get_stats(username):
+    user = users.find_one({"username": username})
+    total_time = 0
+    night_time = 0
+    for drive in user["drives"]:
+        total_time += (drive["stopTime"] - drive["startTime"])
+        if "night" in drive["conditions"]:
+            night_time += (drive["stopTime"] - drive["startTime"])
+    total_hours = round(total_time // 3600)
+    total_minutes = round((total_time % 3600) / 60)
+    total_info = f"{total_hours} hours {total_minutes} minutes"
+    night_hours = round(night_time // 3600)
+    night_minutes = round((night_time % 3600) / 60)
+    night_info = f"{night_hours} hours {night_minutes} minutes"
+    total_percent = str(round(((total_time / 3600) / int(user["goal"])) * 100)) + "%"
+    night_percent = str(round(((night_time / 3600) / int(user["goal"])) * 100)) + "%"
+    days_until_goal = round((time.mktime(time.strptime(user["time_goal"], "%b %d, %Y")) - time.time()) // 86400)
+    weeks_until_goal = days_until_goal // 7
+    hours_left = int(user["goal"]) - total_hours
+    hours_per_week = round(hours_left / weeks_until_goal, 2)
+    return {"total_info": total_info, "night_info": night_info, "total_percent": total_percent,
+            "night_percent": night_percent, "days_until_goal": str(days_until_goal) + " Days",
+            "hours_per_week": str(hours_per_week) + " Hours"}

@@ -13,7 +13,6 @@
 </head>
 
 <body onload="onload()">
-
 <nav class="nav-extended">
     <div class="nav-wrapper teal lighten-2">
         <a href="#" class="brand-logo center">Logo</a>
@@ -47,7 +46,64 @@
     </div>
 </div>
 
-<div id="stats" class="col s12">Stats</div>
+<div id="stats" class="col s12">
+    <div class="container">
+        <div class="row">
+            <!--Day-goal-->
+            <div class="col s12 m6">
+                <div class="card-panel">
+                    <h3>{{ stats["total_info"] }}</h3>
+                    already driven
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="card-panel grey lighten-4">
+                    <h3>{{ stats["total_percent"] }}</h3>
+                    of your goal
+                </div>
+            </div>
+
+            <!--Night-goal-->
+            <div class="col s12 m6">
+                <div class="card-panel black">
+                    <span class="white-text">
+                        <h3>{{ stats["night_info"] }}</h3>
+                        already driven during the night
+                    </span>
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="card-panel grey darken-3">
+                    <span class="white-text">
+                        <h3>{{ stats["night_percent"] }}</h3>
+                        of your night goal
+                    </span>
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="card-panel lime darken-2">
+                    <span class="white-text">
+                            <h3>{{ stats["hours_per_week"] }}</h3>
+                            per week to hit your goal
+                    </span>
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <div class="card-panel light-green darken-3">
+                    <span class="white-text">
+                        <h3>{{ stats["days_until_goal"] }}</h3>
+                        until your goal
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <div id="edit" class="col s12">
     <div id="table">
@@ -72,7 +128,8 @@
                 </div>
 
                 <div class="input-field col s6">
-                    <input value="{{ night_goal }}" name="night_goal" id="night_goal" type="number" class="validate">
+                    <input value="{{ night_goal }}" name="night_goal" id="night_goal" type="number"
+                           class="validate">
                     <label for="night_goal">Goal for night hours</label>
                 </div>
 
