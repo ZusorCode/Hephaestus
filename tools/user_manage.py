@@ -38,8 +38,7 @@ def start_drive(username):
         id = len(users.find_one({"username": username})["drives"])
         users.update_one({"username": username},
                          {"$push": {
-                             "drives": {"startTime": time.time(), "stopTime": 0, "active": True, "conditions": [],
-                                        "id": id}}})
+                             "drives": {"startTime": time.time(), "stopTime": 0, "active": True, "conditions": []}}})
         return user_info.check_drive(username)
     else:
         return False
@@ -77,3 +76,9 @@ def remove_drive(username, id):
         start_time = users.find_one({"username": username})["drives"][int(id)]["startTime"]
         users.update_one({"username": username}, {"$pull": {"drives": {"startTime": start_time}}})
     print(id)
+
+
+def create_drive(username):
+    if user_info.check_username(username):
+        users.update_one({"username": username}, {"$push": {
+            "drives": {"startTime": time.time(), "stopTime": time.time(), "active": False, "conditions": []}}})

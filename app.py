@@ -4,6 +4,7 @@ from os import urandom
 from tools import user_info, user_manage
 from datetime import datetime, timedelta
 import time
+
 app = Flask(__name__)
 app.secret_key = urandom(5000)
 
@@ -173,6 +174,14 @@ def stop_drive():
 def delete_drive():
     user_manage.remove_drive(session["username"], request.form["id"])
     return "True"
+
+
+@app.route("/create_drive", methods=["GET", "POST"])
+@login_required
+def create_drive():
+    if request.method == "POST":
+        if session["username"] == request.form["username"]:
+            user_manage.create_drive(session["username"])
 
 
 @app.route("/change_settings", methods=["GET", "POST"])

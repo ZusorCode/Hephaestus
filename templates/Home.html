@@ -108,6 +108,11 @@
 <div id="edit" class="col s12">
     <div id="table">
     </div>
+    <div class="fixed-action-btn">
+        <a class="btn-floating btn-large red" onclick="create_drive(); update_table()">
+            <i class="material-icons">add</i>
+        </a>
+    </div>
 </div>
 
 <div id="settings" class="col s12">
@@ -231,6 +236,10 @@
         $.post("/delete_drive", {id: id});
         update_table();
         currently_editing = false;
+    }
+
+    function create_drive() {
+        $.post("/create_drive", {"username": "{{ username }}"})
     }
 
 
