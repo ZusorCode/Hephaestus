@@ -1,7 +1,8 @@
+import datetime
+import time
+
 import bcrypt
 from pymongo import MongoClient
-import time
-import datetime
 
 mongo_credentials = open("mongo.credentials", "r")
 client = MongoClient(mongo_credentials.read())
@@ -133,9 +134,10 @@ def get_stats(username):
     total_time = 0
     night_time = 0
     for drive in user["drives"]:
-        total_time += (drive["stopTime"] - drive["startTime"])
-        if "night" in drive["conditions"]:
-            night_time += (drive["stopTime"] - drive["startTime"])
+        if not drive["active"]:
+            total_time += (drive["stopTime"] - drive["startTime"])
+            if "night" in drive["conditions"]:
+                night_time += (drive["stopTime"] - drive["startTime"])
     total_hours = round(total_time // 3600)
     total_minutes = round((total_time % 3600) / 60)
     total_info = f"{total_hours} hours {total_minutes} minutes"
