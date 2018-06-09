@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deleting your account</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body onload="update_progress()">
+<div class="container">
+    <h1>Deleting your account</h1>
+    <br>
+    <div class="progress">
+        <div id="progress_bar" class="determinate" style="width: 0%"></div>
+    </div>
+    <br>
+    <a class="waves-effect waves-light btn" onclick="do_cancel_delete()">Cancel</a>
+</div>
+<script>
+    let progress = 0;
+    let cancel_delete = false;
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function do_cancel_delete() {
+        cancel_delete = true;
+        window.location = "/home#settings";
+    }
+
+    async function update_progress() {
+        while (progress !== 101) {
+            $("#progress_bar").css({"width": progress + "%"});
+            progress += 1;
+            await sleep(80);
+            if (cancel_delete) {
+                while (progress !== -1) {
+                    $("#progress_bar").css({"width": progress + "%"});
+                    progress -= 1;
+                    await sleep(20);
+                }
+                return
+            }
+        }
+        await sleep(300);
+        window.location = "/delete_account"
+    }
+
+</script>
+</body>
+</html>

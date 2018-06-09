@@ -65,6 +65,10 @@ def do_login():
         if request.form.get("remember_me"):
             if request.form["remember_me"] == "on":
                 session.permanent = True
+        if not user_info.check_username(username):
+            return redirect("/login?error=login")
+        if not user_info.check_verified(username):
+            return redirect("/login?error=verified")
         if user_info.check_password(username, password):
             session["logged_in"] = True
             session["username"] = username
@@ -205,9 +209,9 @@ def change_settings():
         night_goal = request.form["night_goal"]
         if time_goal == "":
             return redirect("/home?error=missing#settings")
-        if goal == "":
+        if goal == "" or goal == 0:
             return redirect("/home?error=missing#settings")
-        if night_goal == "":
+        if night_goal == "" or night_goal == 0:
             return redirect("/home?error=missing#settings")
         if user_manage.update_settings(session["username"], time_goal, goal, night_goal):
             return redirect("/home?error=settings_change_success#settings")
@@ -221,16 +225,35 @@ def get_stats():
     return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
 
 
+@app.route("/delete_account_progress")
+@login_required
+def delete_account_progress():
+    return render_template("DeleteAccountProgress.html")
+
+
 @app.route("/delete_account")
 @login_required
 def delete_account():
-    return render_template("DeleteAccount.html")
+    return render_template("DeleteAccount.html", username=session["username"])
 
 
-@app.route("/do_delete_account")
+@app.route("/do_delete_account", methods=["GET", "POST"])
 @login_required
 def do_delete_account():
-    return render_template("DoDeleteAccount.html")
+    if request.method == "POST":
+        if request.form["username"] == session["username"]:
+            session.clear()
+            user_manage.remove_user(request.form["username"])
+            return str(user_info.check_username(request.form["username"]))
+
+
+@app.route("/verify/<string:username>/<string:token>")
+@no_login
+def verify(username, token):
+    if user_manage.verify_user(username, token):
+        return redirect("/login?error=verify_complete")
+    else:
+        return redirect("/login?error=verify_error")
 
 
 @app.route("/login_check")

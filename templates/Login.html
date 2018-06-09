@@ -17,7 +17,7 @@
     </div>
 </nav>
 <form action="/do_login" method="post" autocomplete="off">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="container">
         <div class="row">
             <div class="input-field col s12">
@@ -42,6 +42,27 @@
 {% if error == "login" %}
     <script>
         M.toast({html: 'Wrong username or password', displayLength: 5000});
+    </script>
+{% elif error == "verified" %}
+    <script>
+        M.toast({
+            html: 'Please verify your account first! Just click the link in the email we sent you!',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "verify_complete" %}
+    <script>
+        M.toast({
+            html: 'Account Verified! You can now log in',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "verify_error" %}
+    <script>
+        M.toast({
+            html: 'There was an error verifying your account',
+            displayLength: 5000
+        });
     </script>
 {% endif %}
 </body>

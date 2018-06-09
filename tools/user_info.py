@@ -1,11 +1,10 @@
 import datetime
 import time
-
+from tools import config
 import bcrypt
 from pymongo import MongoClient
-
-mongo_credentials = open("mongo.credentials", "r")
-client = MongoClient(mongo_credentials.read())
+credentials = config.CredentialsManager()
+client = MongoClient(credentials.get_mongo_credentials())
 db = client.drivelog
 users = db.users
 
@@ -39,6 +38,12 @@ def check_password(username, password):
         return bcrypt.checkpw(password, retrieved_password)
     else:
         return False
+
+
+def check_verified(username):
+    if check_username(username):
+        return users.find_one({"username": username})["verified"]
+    return False
 
 
 def get_start_time(username):
@@ -153,3 +158,8 @@ def get_stats(username):
     return {"total_info": total_info, "night_info": night_info, "total_percent": total_percent,
             "night_percent": night_percent, "days_until_goal": str(days_until_goal) + " Days",
             "hours_per_week": str(hours_per_week) + " Hours"}
+
+
+def get_user(username):
+    if check_username(username):
+        return users.find_one({"username": username})
