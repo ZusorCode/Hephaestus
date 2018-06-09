@@ -23,19 +23,19 @@ def check_email(email):
         return False
 
 
-def check_drive(username):
-    if check_username(username):
-        return users.find_one({"username": username})["activeDrive"]
-    else:
-        return False
-
-
 def check_password(username, password):
     if check_username(username):
         retrieved_password = users.find_one({"username": username})['password']
         retrieved_password = retrieved_password.encode()
         password = password.encode()
         return bcrypt.checkpw(password, retrieved_password)
+    else:
+        return False
+
+
+def check_drive(username):
+    if check_username(username):
+        return users.find_one({"username": username})["activeDrive"]
     else:
         return False
 

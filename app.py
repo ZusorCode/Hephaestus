@@ -1,15 +1,14 @@
+from flask import Flask, redirect, session, render_template, request, url_for
 import time
 from datetime import datetime, timedelta
 from functools import wraps
-from os import urandom
-
-from flask import Flask, redirect, session, render_template, request, url_for
+import os
 from flask_wtf import CSRFProtect
 from tools import user_info, user_manage
 
 app = Flask(__name__)
 CSRFProtect(app)
-app.secret_key = urandom(5000)
+app.secret_key = os.urandom(5000)
 
 
 def login_required(f):
@@ -127,6 +126,37 @@ def home():
                            error=error, stats=user_info.get_stats(session["username"]))
 
 
+@app.route("/start_drive", methods=["GET", "POST"])
+@login_required
+def start_drive():
+    if request.method == "POST":
+        username = request.form["username"]
+        if username == session["username"]:
+            if not user_info.check_drive(username):
+                return str(user_manage.start_drive(username))
+
+
+@app.route("/stop_drive", methods=["GET", "POST"])
+@login_required
+def stop_drive():
+    if request.method == "POST":
+        username = request.form["username"]
+        time_mode = request.form["timemode"]
+        if time_mode == "auto":
+            if 21 <= int(datetime.now().__format__("%H")) or 5 >= int(datetime.now().__format__("%H")):
+                time_mode = "night"
+
+        if username == session["username"]:
+            if user_info.check_drive(username):
+                return str(user_manage.stop_drive(username, time_mode))
+
+
+@app.route("/get_stats")
+@login_required
+def get_stats():
+    return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
+
+
 @app.route("/get_table")
 @login_required
 def get_table():
@@ -160,29 +190,12 @@ def edit_data():
         return "Done"
 
 
-@app.route("/start_drive", methods=["GET", "POST"])
+@app.route("/create_drive", methods=["GET", "POST"])
 @login_required
-def start_drive():
+def create_drive():
     if request.method == "POST":
-        username = request.form["username"]
-        if username == session["username"]:
-            if not user_info.check_drive(username):
-                return str(user_manage.start_drive(username))
-
-
-@app.route("/stop_drive", methods=["GET", "POST"])
-@login_required
-def stop_drive():
-    if request.method == "POST":
-        username = request.form["username"]
-        time_mode = request.form["timemode"]
-        if time_mode == "auto":
-            if 21 <= int(datetime.now().__format__("%H")) or 5 >= int(datetime.now().__format__("%H")):
-                time_mode = "night"
-
-        if username == session["username"]:
-            if user_info.check_drive(username):
-                return str(user_manage.stop_drive(username, time_mode))
+        if session["username"] == request.form["username"]:
+            user_manage.create_drive(session["username"])
 
 
 @app.route("/delete_drive", methods=["GET", "POST"])
@@ -190,14 +203,6 @@ def stop_drive():
 def delete_drive():
     user_manage.remove_drive(session["username"], request.form["id"])
     return "True"
-
-
-@app.route("/create_drive", methods=["GET", "POST"])
-@login_required
-def create_drive():
-    if request.method == "POST":
-        if session["username"] == request.form["username"]:
-            user_manage.create_drive(session["username"])
 
 
 @app.route("/change_settings", methods=["GET", "POST"])
@@ -217,12 +222,6 @@ def change_settings():
             return redirect("/home?error=settings_change_success#settings")
         else:
             return redirect("/home?error=settings_change_error#settings")
-
-
-@app.route("/get_stats")
-@login_required
-def get_stats():
-    return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
 
 
 @app.route("/delete_account_progress")
