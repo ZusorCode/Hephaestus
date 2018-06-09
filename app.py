@@ -4,10 +4,11 @@ from functools import wraps
 from os import urandom
 
 from flask import Flask, redirect, session, render_template, request, url_for
-
+from flask_wtf import CSRFProtect
 from tools import user_info, user_manage
 
 app = Flask(__name__)
+CSRFProtect(app)
 app.secret_key = urandom(5000)
 
 
@@ -138,21 +139,21 @@ def get_editable_table():
 @app.route("/edit_data", methods=["GET", "POST"])
 @login_required
 def edit_data():
-    print(request.form)
-    start_date = request.form["startDate"]
-    start_time = request.form["startTime"]
-    stop_time = request.form["stopTime"]
-    night = request.form["night"]
-    conditions = []
-    if night == "true":
-        conditions.append("night")
-    id = request.form["id"]
-    start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
-    stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
-    if start_timestamp > stop_timestamp:
-        stop_timestamp += timedelta(days=1).total_seconds()
-    user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp, conditions)
-    return "True"
+    if request.method == "POST":
+        start_date = request.form["startDate"]
+        start_time = request.form["startTime"]
+        stop_time = request.form["stopTime"]
+        night = request.form["night"]
+        conditions = []
+        if night == "true":
+            conditions.append("night")
+        id = request.form["id"]
+        start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
+        stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
+        if start_timestamp > stop_timestamp:
+            stop_timestamp += timedelta(days=1).total_seconds()
+        user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp, conditions)
+        return "Done"
 
 
 @app.route("/start_drive", methods=["GET", "POST"])
@@ -218,6 +219,18 @@ def change_settings():
 @login_required
 def get_stats():
     return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
+
+
+@app.route("/delete_account")
+@login_required
+def delete_account():
+    return render_template("DeleteAccount.html")
+
+
+@app.route("/do_delete_account")
+@login_required
+def do_delete_account():
+    return render_template("DoDeleteAccount.html")
 
 
 @app.route("/login_check")

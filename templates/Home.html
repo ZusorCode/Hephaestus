@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body onload="onload()">
@@ -100,7 +101,20 @@
                 <i class="material-icons right">send</i>
             </button>
             <br><br>
-            <a class="waves-effect waves-light btn red"><i class="material-icons right">delete</i>Delete account</a>
+            <a class="waves-effect waves-light btn red modal-trigger" href="#delete_account"><i
+                    class="material-icons right">delete</i>Delete account</a>
+            <div id="delete_account" class="modal">
+                <div class="modal-content">
+                    <h4>Are you sure?</h4>
+                    <p>This will irreversibly delete all your data, including drives, supervisors and settings.
+                        If you do this your account cannot be restored!</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="/delete_account" class="modal-close waves-effect waves-green btn-flat red-text">Delete my
+                        account</a>
+                    <a href="#!" class="modal-close waves-effect waves-green btn-flat green-text">Cancel</a>
+                </div>
+            </div>
         </form>
 
     </div>
@@ -129,6 +143,15 @@
 <script>
     let currently_editing;
     let timerEnabled;
+    var csrftoken = $('meta[name=csrf-token]').attr('content')
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken)
+            }
+        }
+    });
 
     function onload() {
         update_table();
