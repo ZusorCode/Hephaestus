@@ -1,8 +1,11 @@
 import datetime
 import time
-from tools import config
+
 import bcrypt
 from pymongo import MongoClient
+
+from tools import config
+
 credentials = config.CredentialsManager()
 client = MongoClient(credentials.get_mongo_credentials())
 db = client.drivelog
@@ -163,3 +166,11 @@ def get_stats(username):
 def get_user(username):
     if check_username(username):
         return users.find_one({"username": username})
+
+
+def convert_time(username, timestamp):
+    if check_username(username):
+        time_difference = users.find_one({"username": username})["timezone"]
+        timestamp = datetime.datetime.fromtimestamp(timestamp)
+        new_timestamp = timestamp + datetime.timedelta(days=time_difference)
+        return new_timestamp.total_seconds()
