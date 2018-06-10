@@ -33,7 +33,6 @@ def no_login(f):
             if session["username"] != "":
                 return redirect(url_for("route"))
         return f(*args, **kwargs)
-
     return decorated_function
 
 
@@ -64,7 +63,7 @@ def do_login():
         if request.form.get("remember_me"):
             if request.form["remember_me"] == "on":
                 session.permanent = True
-        if not user_info.check_username(username):
+        if not user_check.check_username(username):
             return redirect("/login?error=login")
         if not user_info.check_verified(username):
             return redirect("/login?error=verified")
@@ -100,7 +99,7 @@ def do_register():
         email = request.form["email"]
         password = request.form["password"]
         password_repeat = request.form["password_repeat"]
-        if user_info.check_username(username):
+        if user_check.check_username(username):
             return redirect("/register?error=username")
         elif user_info.check_email(email):
             return redirect("/register?error=email")
@@ -120,7 +119,7 @@ def home():
     return render_template("Home.html", username=session["username"],
                            running=user_info.check_drive(session["username"]),
                            startTime=user_info.get_start_time(session["username"]),
-                           time_goal=user_info.get_time_goal(session["username"]),
+                           date_goal=user_info.get_date_goal(session["username"]),
                            goal=user_info.get_goal(session["username"]),
                            night_goal=user_info.get_night_goal(session["username"]),
                            error=error, stats=user_info.get_stats(session["username"]))
@@ -209,16 +208,16 @@ def delete_drive():
 @login_required
 def change_settings():
     if request.method == "POST":
-        time_goal = request.form["time_goal"]
+        date_goal = request.form["date_goal"]
         goal = request.form["goal"]
         night_goal = request.form["night_goal"]
-        if time_goal == "":
+        if date_goal == "":
             return redirect("/home?error=missing#settings")
         if goal == "" or goal == 0:
             return redirect("/home?error=missing#settings")
         if night_goal == "" or night_goal == 0:
             return redirect("/home?error=missing#settings")
-        if user_manage.update_settings(session["username"], time_goal, goal, night_goal):
+        if user_manage.update_settings(session["username"], date_goal, goal, night_goal):
             return redirect("/home?error=settings_change_success#settings")
         else:
             return redirect("/home?error=settings_change_error#settings")
@@ -243,7 +242,7 @@ def do_delete_account():
         if request.form["username"] == session["username"]:
             session.clear()
             user_manage.remove_user(request.form["username"])
-            return str(user_info.check_username(request.form["username"]))
+            return str(user_check.check_username(request.form["username"]))
 
 
 @app.route("/verify/<string:username>/<string:token>")
