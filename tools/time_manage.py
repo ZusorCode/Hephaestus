@@ -2,7 +2,7 @@ import datetime
 import pytz
 from dateutil import parser
 from pymongo import MongoClient
-from tools import config, user_get, user_check
+from tools import config, user_check, user_get
 credentials = config.CredentialsManager()
 client = MongoClient(credentials.get_mongo_credentials())
 db = client.drivelog
@@ -12,7 +12,7 @@ users = db.users
 def iso_utc_to_date(username, iso_utc):
     if user_check.check_username(username):
         date_object = parser.parse(iso_utc)
-        timezone = user_get.get_any(username, "timezone")
+        timezone = user_get.get(username, "timezone")
         localized_time = date_object.astimezone(pytz.timezone(timezone))
         return datetime.datetime.strftime(localized_time, "%b %d, %Y")
     else:
@@ -22,7 +22,7 @@ def iso_utc_to_date(username, iso_utc):
 def iso_utc_to_time(username, iso_utc):
     if user_check.check_username(username):
         date_object = parser.parse(iso_utc)
-        timezone = user_get.get_any(username, "timezone")
+        timezone = user_get.get(username, "timezone")
         localized_time = date_object.astimezone(pytz.timezone(timezone))
         return datetime.datetime.strftime(localized_time, "%I:%M %p")
     else:
@@ -32,19 +32,22 @@ def iso_utc_to_time(username, iso_utc):
 def iso_utc_to_local(username, iso_utc):
     if user_check.check_username(username):
         date_object = parser.parse(iso_utc)
-        timezone = user_get.get_any(username, "timezone")
+        timezone = user_get.get(username, "timezone")
         localized_time = date_object.astimezone(pytz.timezone(timezone))
         return localized_time.isoformat()
 
 
 def date_local_to_iso_utc(username, date_local):
     if user_check.check_username(username):
-        timezone = user_get.get_any(username, "timezone")
-        user_timezone = pytz.timezone(user_get.get_any(username, "timezone"))
+        timezone = user_get.get(username, "timezone")
+        user_timezone = pytz.timezone(user_get.get(username, "timezone"))
         datetime_local = datetime.datetime.strptime(date_local, "%b %d, %Y")
         datetime_local = datetime_local.replace(tzinfo=user_timezone)
         return datetime_local
 
+
+# TODO: Find better function name
+def update_drive_thing(username, date, start_time, stop_time):
 
 def drive_duration_formatted(start_time, stop_time):
     start_datetime = parser.parse(start_time)
@@ -71,7 +74,7 @@ def drive_duration_seconds(start_time, stop_time):
 
 
 def days_until_goal(username):
-    goal = user_get.get_any(username, "date_goal")
+    goal = user_get.get(username, "date_goal")
     difference = parser.parse(goal) - datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
     if difference >= 0:
         difference = difference.days

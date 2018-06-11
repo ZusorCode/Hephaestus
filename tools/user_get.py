@@ -7,7 +7,7 @@ db = client.drivelog
 users = db.users
 
 
-def get_any(username, value):
+def get(username, value):
     return users.find_one({"username": username})[value]
 
 
@@ -35,7 +35,7 @@ def get_drive_data(username):
 
 def get_drive(username, drive_id):
     if user_check.check_username(username):
-        drive = get_any(username, "drives")[int(drive_id)]
+        drive = get(username, "drives")[int(drive_id)]
         start_date = time_manage.iso_utc_to_date(username, drive["startTime"])
         start_time = time_manage.iso_utc_to_time(username, drive["startTime"])
         stop_time = time_manage.iso_utc_to_time(username, drive["stopTime"])

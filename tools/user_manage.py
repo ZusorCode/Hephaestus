@@ -41,7 +41,7 @@ def start_drive(username):
                          {"$push": {
                              "drives": {"startTime": time_manage.iso_utc_now(), "stopTime": 0, "active": True,
                                         "conditions": []}}})
-        return user_get.get_any(username, "activeDrive")
+        return user_get.get(username, "activeDrive")
     else:
         return False
 
@@ -55,7 +55,7 @@ def stop_drive(username, time_mode):
             users.update_one({"username": username, "drives.active": True},
                              {"$set": {"drives.$.conditions": ["night"]}})
         users.update_one({"username": username, "drives.active": True}, {"$set": {"drives.$.active": False}})
-        return not user_get.get_any(username, "activeDrive")
+        return not user_get.get(username, "activeDrive")
     else:
         return False
 
@@ -73,7 +73,7 @@ def update_settings(username, date_goal, goal, night_goal):
         return False
 
 
-def update_drive(username, drive_id, start_time, stop_time, conditions):
+def update_drive(username, drive_id, start_date, start_time, stop_time):
     if user_check.check_username(username):
         users.update_one({"username": username}, {"$set": {f"drives.{drive_id}.startTime": start_time}})
         users.update_one({"username": username}, {"$set": {f"drives.{drive_id}.stopTime": stop_time}})

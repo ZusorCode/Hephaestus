@@ -180,12 +180,12 @@ def edit_data():
         conditions = []
         if night == "true":
             conditions.append("night")
-        id = request.form["id"]
-        start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
-        stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
-        if start_timestamp > stop_timestamp:
-            stop_timestamp += timedelta(days=1).total_seconds()
-        user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp, conditions)
+        drive_id = request.form["id"]
+        # start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
+        # stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
+        # if start_timestamp > stop_timestamp:
+        #     stop_timestamp += timedelta(days=1).total_seconds()
+        user_manage.update_drive(session["username"], drive_id, start_date, start_time, stop_time)
         return "Done"
 
 
