@@ -1,8 +1,9 @@
+import time
+
 import bcrypt
 from pymongo import MongoClient
+
 from tools import user_info, user_check, config, user_get, email_tool, time_manage
-from datetime import datetime, timedelta
-import time
 
 credentials = config.CredentialsManager()
 client = MongoClient(credentials.get_mongo_credentials())
@@ -73,10 +74,14 @@ def update_settings(username, date_goal, goal, night_goal):
         return False
 
 
-def update_drive(username, drive_id, start_date, start_time, stop_time):
+def update_drive(username, drive_id, start_date, start_time, stop_time, conditions):
     if user_check.check_username(username):
-        users.update_one({"username": username}, {"$set": {f"drives.{drive_id}.startTime": start_time}})
-        users.update_one({"username": username}, {"$set": {f"drives.{drive_id}.stopTime": stop_time}})
+        updated_drive_info = time_manage.date_start_stop_as_iso_utc(username, start_date, start_time, stop_time)
+        users.update_one({"username": username},
+                         {"$set": {f"drives.{drive_id}.startTime": updated_drive_info["start_date"]
+                                   }})
+        users.update_one({"username": username},
+                         {"$set": {f"drives.{drive_id}.stopTime": updated_drive_info["stop_date"]}})
         users.update_one({"username": username}, {"$set": {f"drives.{drive_id}.conditions": conditions}})
         return True
     return False

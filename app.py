@@ -1,9 +1,10 @@
-from flask import Flask, redirect, session, render_template, request, url_for
-import time
-from datetime import datetime, timedelta
-from functools import wraps
 import os
+from datetime import datetime
+from functools import wraps
+
+from flask import Flask, redirect, session, render_template, request, url_for
 from flask_wtf import CSRFProtect
+
 from tools import user_info, user_manage
 
 app = Flask(__name__)
@@ -185,7 +186,7 @@ def edit_data():
         # stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
         # if start_timestamp > stop_timestamp:
         #     stop_timestamp += timedelta(days=1).total_seconds()
-        user_manage.update_drive(session["username"], drive_id, start_date, start_time, stop_time)
+        user_manage.update_drive(session["username"], drive_id, start_date, start_time, stop_time, conditions)
         return "Done"
 
 
