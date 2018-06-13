@@ -7,6 +7,7 @@
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='register.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body>
@@ -17,7 +18,6 @@
     </div>
 </nav>
 <form action="/do_register" method="post" autocomplete="off">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="container">
         <div class="input-field col s12">
             <input name="username" id="username" type="text" class="validate" required="" aria-required="true">
@@ -43,11 +43,13 @@
             <span class="helper-text" data-error="We need to make sure that you gave us the correct password"
                   data-success=""></span>
         </div></div>
+        <input type="hidden" id="timezone_input" name="timezone" value="">
         <p>Already have an account? <a href="/login">Log in</a></p>
         <button class="btn waves-effect waves-light" type="submit" name="action">Register
             <i class="material-icons right">send</i>
         </button>
     </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% if error == "username" %}
     <script>
@@ -62,6 +64,8 @@
         M.toast({html: 'The passwords did not match', displayLength: 5000});
     </script>
 {% endif %}
-
+<script>
+    $("#timezone_input").val(Intl.DateTimeFormat().resolvedOptions().timeZone);
+</script>
 </body>
 </html>

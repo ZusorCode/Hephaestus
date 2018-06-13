@@ -77,20 +77,21 @@
         <form action="/change_settings" autocomplete="off" method="post">
             <br>
             <div class="input-field col s12">
-                <input value="{{ time_goal }}" name="time_goal" type="text" class="datepicker" id="time_goal">
-                <label for="time_goal">When do you want to be done with your goal</label>
+                <input value="{{ settings_prefill["date_goal"] }}" name="date_goal" type="text" class="datepicker"
+                       id="date_goal">
+                <label for="date_goal">When do you want to be done with your goal</label>
 
             </div>
 
             <div class="row">
 
                 <div class="input-field col s6">
-                    <input value="{{ goal }}" name="goal" id="goal" type="number" class="validate">
+                    <input value="{{ settings_prefill["goal"] }}" name="goal" id="goal" type="number" class="validate">
                     <label for="goal">Goal for hours</label>
                 </div>
 
                 <div class="input-field col s6">
-                    <input value="{{ night_goal }}" name="night_goal" id="night_goal" type="number"
+                    <input value="{{ settings_prefill["night_goal"] }}" name="night_goal" id="night_goal" type="number"
                            class="validate">
                     <label for="night_goal">Goal for night hours</label>
                 </div>
@@ -100,22 +101,25 @@
             <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
-            <br><br>
-            <a class="waves-effect waves-light btn red modal-trigger" href="#delete_account"><i
-                    class="material-icons right">delete</i>Delete account</a>
-            <div id="delete_account" class="modal">
-                <div class="modal-content">
-                    <h4>Are you sure?</h4>
-                    <p>This will irreversibly delete all your data, including drives, supervisors and settings.
-                        If you do this your account cannot be restored!</p>
-                </div>
-                <div class="modal-footer">
-                    <a href="/delete_account_progress" class="modal-close waves-effect waves-green btn-flat red-text">Delete my
-                        account</a>
-                    <a href="#!" class="modal-close waves-effect waves-green btn-flat green-text">Cancel</a>
-                </div>
-            </div>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
         </form>
+        <br><br>
+        <a class="waves-effect waves-light btn red modal-trigger" href="#delete_account"><i
+                class="material-icons right">delete</i>Delete account</a>
+        <div id="delete_account" class="modal">
+            <div class="modal-content">
+                <h4>Are you sure?</h4>
+                <p>This will irreversibly delete all your data, including drives, supervisors and settings.
+                    If you do this your account cannot be restored!</p>
+            </div>
+            <div class="modal-footer">
+                <a href="/delete_account_progress" class="modal-close waves-effect waves-green btn-flat red-text">Delete
+                    my
+                    account</a>
+                <a href="#!" class="modal-close waves-effect waves-green btn-flat green-text">Cancel</a>
+            </div>
+        </div>
 
     </div>
 
@@ -143,8 +147,7 @@
 <script>
     let currently_editing;
     let timerEnabled;
-    var csrftoken = $('meta[name=csrf-token]').attr('content')
-
+    var csrftoken = $('meta[name=csrf-token]').attr('content');
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
@@ -209,10 +212,12 @@
         let startTime = $("#startTimeForm").val();
         let stopTime = $("#stopTimeForm").val();
         let night = $("#nightForm").prop("checked");
-        $.post("/edit_data", {startDate: startDate, startTime: startTime, stopTime: stopTime, id: id, night: night});
+        $.post("/edit_data", {startDate: startDate, startTime: startTime, stopTime: stopTime, id: id, night: night})
+            .done(function () {
+                update_table();
+                update_stats();
+            });
         currently_editing = false;
-        update_table();
-        update_stats();
     }
 
     function discard_edit() {
@@ -224,15 +229,19 @@
 
     function delete_drive(id) {
         autologout();
-        $.post("/delete_drive", {id: id});
-        update_table();
-        update_stats();
+        $.post("/delete_drive", {id: id})
+            .done(function () {
+                update_table();
+                update_stats();
+            });
         currently_editing = false;
     }
 
     function create_drive() {
-        $.post("/create_drive", {"username": "{{ username }}"});
-        update_stats();
+        $.post("/create_drive", {"username": "{{ username }}"})
+            .done(function () {
+                update_stats();
+            });
     }
 
 
@@ -262,12 +271,12 @@
         $.post("/stop_drive", {username: username, timemode: timemode})
             .done(function () {
                 update_table();
+                update_stats();
+                $("#startbutton").toggleClass("waves-effect wave-light disabled");
+                $("#stopbutton").toggleClass("waves-effect wave-light disabled");
+                timerEnabled = false;
+                document.cookie = "startTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             });
-        $("#startbutton").toggleClass("waves-effect wave-light disabled");
-        $("#stopbutton").toggleClass("waves-effect wave-light disabled");
-        timerEnabled = false;
-        document.cookie = "startTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        update_stats();
     }
 
 
@@ -282,7 +291,7 @@
         username = "{{ username }}";
         startTime = new Date() / 1000;
         document.cookie = "startTime=" + startTime + ";expires=Wed, 1 Jan 2025 00:00:00 UTC; path=/";
-        $.post("/start_drive", {username: username})
+        $.post("/start_drive", {username: username});
     }
 
 
@@ -312,7 +321,6 @@
                 if (seconds < 10) {
                     seconds = "0" + seconds;
                 }
-                console.log(hours + ":" + minutes + ":" + seconds);
                 $("#timerDisplay").text(hours + ":" + minutes + ":" + seconds);
             }
         }

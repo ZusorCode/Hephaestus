@@ -1,6 +1,6 @@
 import smtplib
 from email.message import EmailMessage
-from tools import user_info, config, user_manage
+from tools import user_get, config, user_manage
 from os import urandom
 from base64 import b64encode
 
@@ -9,7 +9,7 @@ credentials = config.CredentialsManager()
 
 def send_email_confirmation(username):
     msg = EmailMessage()
-    receiver = user_info.get_user(username)["email"]
+    receiver = user_get.get(username, "email")
     msg["From"] = credentials.get_smtp_verify_address()
     msg["To"] = receiver
     msg["Subject"] = "Thanks for signing up!"

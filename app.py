@@ -1,10 +1,11 @@
-from flask import Flask, redirect, session, render_template, request, url_for
-import time
-from datetime import datetime, timedelta
-from functools import wraps
 import os
+from datetime import datetime
+from functools import wraps
+
+from flask import Flask, redirect, session, render_template, request, url_for
 from flask_wtf import CSRFProtect
-from tools import user_info, user_manage
+
+from tools import user_check, user_get, user_manage
 
 app = Flask(__name__)
 CSRFProtect(app)
@@ -33,7 +34,6 @@ def no_login(f):
             if session["username"] != "":
                 return redirect(url_for("route"))
         return f(*args, **kwargs)
-
     return decorated_function
 
 
@@ -64,11 +64,11 @@ def do_login():
         if request.form.get("remember_me"):
             if request.form["remember_me"] == "on":
                 session.permanent = True
-        if not user_info.check_username(username):
+        if not user_check.check_username(username):
             return redirect("/login?error=login")
-        if not user_info.check_verified(username):
+        if not user_check.check_verified(username):
             return redirect("/login?error=verified")
-        if user_info.check_password(username, password):
+        if user_check.check_password(username, password):
             session["logged_in"] = True
             session["username"] = username
         else:
@@ -100,15 +100,17 @@ def do_register():
         email = request.form["email"]
         password = request.form["password"]
         password_repeat = request.form["password_repeat"]
-        if user_info.check_username(username):
+        timezone = request.form["timezone"]
+        print(timezone)
+        if user_check.check_username(username):
             return redirect("/register?error=username")
-        elif user_info.check_email(email):
+        elif user_check.check_email(email):
             return redirect("/register?error=email")
         elif not password == password_repeat:
             return redirect("/register?error=password")
         else:
-            if user_manage.register(username, email, password):
-                return redirect(url_for("login"))
+            if user_manage.register(username, email, password, timezone):
+                return redirect("/login#error=register_success")
             else:
                 return "Error"
 
@@ -118,12 +120,11 @@ def do_register():
 def home():
     error = request.args.get("error")
     return render_template("Home.html", username=session["username"],
-                           running=user_info.check_drive(session["username"]),
-                           startTime=user_info.get_start_time(session["username"]),
-                           time_goal=user_info.get_time_goal(session["username"]),
-                           goal=user_info.get_goal(session["username"]),
-                           night_goal=user_info.get_night_goal(session["username"]),
-                           error=error, stats=user_info.get_stats(session["username"]))
+                           running=user_get.get(session["username"], "activeDrive"),
+                           startTime=user_get.get_start_time(session["username"]),
+                           date_goal=user_get.get(session["username"], "date_goal"),
+                           settings_prefill=user_get.get_settings_prefill(session["username"]),
+                           error=error, stats=user_get.get_stats(session["username"]))
 
 
 @app.route("/start_drive", methods=["GET", "POST"])
@@ -132,7 +133,7 @@ def start_drive():
     if request.method == "POST":
         username = request.form["username"]
         if username == session["username"]:
-            if not user_info.check_drive(username):
+            if not user_check.check_drive(username):
                 return str(user_manage.start_drive(username))
 
 
@@ -147,27 +148,27 @@ def stop_drive():
                 time_mode = "night"
 
         if username == session["username"]:
-            if user_info.check_drive(username):
+            if user_check.check_drive(username):
                 return str(user_manage.stop_drive(username, time_mode))
 
 
 @app.route("/get_stats")
 @login_required
 def get_stats():
-    return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
+    return render_template("Stats.html", stats=user_get.get_stats(session["username"]))
 
 
 @app.route("/get_table")
 @login_required
 def get_table():
-    return render_template("Table.html", drives=user_info.get_drive_data(session["username"]))
+    return render_template("Table.html", drives=user_get.get_drive_data(session["username"]))
 
 
 @app.route("/get_editable_table")
 @login_required
 def get_editable_table():
     id = request.args.get("id")
-    return render_template("EditTable.html", drive=user_info.get_drive(session["username"], id))
+    return render_template("EditTable.html", drive=user_get.get_drive(session["username"], id))
 
 
 @app.route("/edit_data", methods=["GET", "POST"])
@@ -181,12 +182,12 @@ def edit_data():
         conditions = []
         if night == "true":
             conditions.append("night")
-        id = request.form["id"]
-        start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
-        stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
-        if start_timestamp > stop_timestamp:
-            stop_timestamp += timedelta(days=1).total_seconds()
-        user_manage.update_drive(session["username"], id, start_timestamp, stop_timestamp, conditions)
+        drive_id = request.form["id"]
+        # start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
+        # stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
+        # if start_timestamp > stop_timestamp:
+        #     stop_timestamp += timedelta(days=1).total_seconds()
+        user_manage.update_drive(session["username"], drive_id, start_date, start_time, stop_time, conditions)
         return "Done"
 
 
@@ -209,16 +210,16 @@ def delete_drive():
 @login_required
 def change_settings():
     if request.method == "POST":
-        time_goal = request.form["time_goal"]
+        date_goal = request.form["date_goal"]
         goal = request.form["goal"]
         night_goal = request.form["night_goal"]
-        if time_goal == "":
+        if date_goal == "":
             return redirect("/home?error=missing#settings")
         if goal == "" or goal == 0:
             return redirect("/home?error=missing#settings")
         if night_goal == "" or night_goal == 0:
             return redirect("/home?error=missing#settings")
-        if user_manage.update_settings(session["username"], time_goal, goal, night_goal):
+        if user_manage.update_settings(session["username"], date_goal, goal, night_goal):
             return redirect("/home?error=settings_change_success#settings")
         else:
             return redirect("/home?error=settings_change_error#settings")
@@ -243,7 +244,7 @@ def do_delete_account():
         if request.form["username"] == session["username"]:
             session.clear()
             user_manage.remove_user(request.form["username"])
-            return str(user_info.check_username(request.form["username"]))
+            return str(user_check.check_username(request.form["username"]))
 
 
 @app.route("/verify/<string:username>/<string:token>")
