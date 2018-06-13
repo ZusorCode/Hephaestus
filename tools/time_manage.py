@@ -48,7 +48,7 @@ def date_local_to_iso_utc(username, date_local):
         return datetime_local
 
 
-def date_start_stop_as_iso_utc(username, date, start_time, stop_time):
+def date_start_stop_to_iso_utc(username, date, start_time, stop_time):
     if user_check.check_username(username):
         user_timezone = pytz.timezone(user_get.get(username, "timezone"))
         start_datetime = datetime.datetime.strptime(f"{date} {start_time}", "%b %d, %Y %I:%M %p")
@@ -57,9 +57,17 @@ def date_start_stop_as_iso_utc(username, date, start_time, stop_time):
             stop_datetime += datetime.timedelta(days=1)
         start_datetime = start_datetime.replace(tzinfo=user_timezone)
         stop_datetime = stop_datetime.replace(tzinfo=user_timezone)
-        start_datetime = start_datetime.astimezone(pytz.timezone("UTC"))
-        stop_datetime = stop_datetime.astimezone(pytz.timezone("UTC"))
+        start_datetime = start_datetime.astimezone(pytz.timezone("UTC")).isoformat()
+        stop_datetime = stop_datetime.astimezone(pytz.timezone("UTC")).isoformat()
         return {"start_date": start_datetime, "stop_date": stop_datetime}
+
+
+def iso_utc_to_unix(username, iso_utc):
+    if user_check.check_username(username):
+        date_object = parser.parse(iso_utc)
+        timezone = user_get.get(username, "timezone")
+        localized_time = date_object.astimezone(pytz.timezone(timezone))
+        return localized_time.timestamp()
 
 
 def drive_duration_formatted(start_time, stop_time):
@@ -88,17 +96,21 @@ def drive_duration_seconds(start_time, stop_time):
 
 def days_until_goal(username):
     goal = user_get.get(username, "date_goal")
-    difference = parser.parse(goal) - datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-    if difference >= 0:
-        difference = difference.days
-        difference = f"{str(difference)} Days"
+    difference = parser.parse(goal).replace(tzinfo=pytz.timezone(user_get.get(username, "timezone"))).astimezone(
+        pytz.timezone("UTC")) - datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    if difference.days > 0:
+        return difference.days
     else:
-        difference = "No more days"
-    return difference
+        return 0
 
 
 def iso_utc_now():
     return datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
 
 
-print(date_local_to_iso_utc("Zusor", "Jun 06, 2018"))
+def unix_now():
+    return datetime.datetime.now().timestamp()
+
+
+def iso_utc_in_1_year():
+    return (datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(days=365)).isoformat()

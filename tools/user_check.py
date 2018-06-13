@@ -1,6 +1,6 @@
-from tools import config
 from pymongo import MongoClient
-
+from tools import config
+import bcrypt
 credentials = config.CredentialsManager()
 client = MongoClient(credentials.get_mongo_credentials())
 db = client.drivelog

@@ -5,7 +5,7 @@ from functools import wraps
 from flask import Flask, redirect, session, render_template, request, url_for
 from flask_wtf import CSRFProtect
 
-from tools import user_info, user_manage
+from tools import user_check, user_get, user_manage
 
 app = Flask(__name__)
 CSRFProtect(app)
@@ -66,9 +66,9 @@ def do_login():
                 session.permanent = True
         if not user_check.check_username(username):
             return redirect("/login?error=login")
-        if not user_info.check_verified(username):
+        if not user_check.check_verified(username):
             return redirect("/login?error=verified")
-        if user_info.check_password(username, password):
+        if user_check.check_password(username, password):
             session["logged_in"] = True
             session["username"] = username
         else:
@@ -100,15 +100,17 @@ def do_register():
         email = request.form["email"]
         password = request.form["password"]
         password_repeat = request.form["password_repeat"]
+        timezone = request.form["timezone"]
+        print(timezone)
         if user_check.check_username(username):
             return redirect("/register?error=username")
-        elif user_info.check_email(email):
+        elif user_check.check_email(email):
             return redirect("/register?error=email")
         elif not password == password_repeat:
             return redirect("/register?error=password")
         else:
-            if user_manage.register(username, email, password):
-                return redirect(url_for("login"))
+            if user_manage.register(username, email, password, timezone):
+                return redirect("/login#error=register_success")
             else:
                 return "Error"
 
@@ -118,12 +120,11 @@ def do_register():
 def home():
     error = request.args.get("error")
     return render_template("Home.html", username=session["username"],
-                           running=user_info.check_drive(session["username"]),
-                           startTime=user_info.get_start_time(session["username"]),
-                           date_goal=user_info.get_date_goal(session["username"]),
-                           goal=user_info.get_goal(session["username"]),
-                           night_goal=user_info.get_night_goal(session["username"]),
-                           error=error, stats=user_info.get_stats(session["username"]))
+                           running=user_get.get(session["username"], "activeDrive"),
+                           startTime=user_get.get_start_time(session["username"]),
+                           date_goal=user_get.get(session["username"], "date_goal"),
+                           settings_prefill=user_get.get_settings_prefill(session["username"]),
+                           error=error, stats=user_get.get_stats(session["username"]))
 
 
 @app.route("/start_drive", methods=["GET", "POST"])
@@ -132,7 +133,7 @@ def start_drive():
     if request.method == "POST":
         username = request.form["username"]
         if username == session["username"]:
-            if not user_info.check_drive(username):
+            if not user_check.check_drive(username):
                 return str(user_manage.start_drive(username))
 
 
@@ -147,27 +148,27 @@ def stop_drive():
                 time_mode = "night"
 
         if username == session["username"]:
-            if user_info.check_drive(username):
+            if user_check.check_drive(username):
                 return str(user_manage.stop_drive(username, time_mode))
 
 
 @app.route("/get_stats")
 @login_required
 def get_stats():
-    return render_template("Stats.html", stats=user_info.get_stats(session["username"]))
+    return render_template("Stats.html", stats=user_get.get_stats(session["username"]))
 
 
 @app.route("/get_table")
 @login_required
 def get_table():
-    return render_template("Table.html", drives=user_info.get_drive_data(session["username"]))
+    return render_template("Table.html", drives=user_get.get_drive_data(session["username"]))
 
 
 @app.route("/get_editable_table")
 @login_required
 def get_editable_table():
     id = request.args.get("id")
-    return render_template("EditTable.html", drive=user_info.get_drive(session["username"], id))
+    return render_template("EditTable.html", drive=user_get.get_drive(session["username"], id))
 
 
 @app.route("/edit_data", methods=["GET", "POST"])

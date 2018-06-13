@@ -21,13 +21,13 @@
 <script>
     let progress = 0;
     let cancel_delete = false;
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     function do_cancel_delete() {
         cancel_delete = true;
-        window.location = "/home#settings";
     }
 
     async function update_progress() {
@@ -36,16 +36,19 @@
             progress += 1;
             await sleep(80);
             if (cancel_delete) {
-                while (progress !== -1) {
-                    $("#progress_bar").css({"width": progress + "%"});
-                    progress -= 1;
-                    await sleep(20);
-                }
-                return
+                break;
             }
         }
-        await sleep(300);
-        window.location = "/delete_account"
+        if (cancel_delete) {
+            while (progress !== -1) {
+                $("#progress_bar").css({"width": progress + "%"});
+                progress -= 1;
+                await sleep(20);
+            }
+            window.location = "/home#settings"
+        }else {
+            window.location = "/delete_account";
+        }
     }
 
 </script>
