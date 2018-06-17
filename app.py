@@ -110,7 +110,7 @@ def do_register():
             return redirect("/register?error=password")
         else:
             if user_manage.register(username, email, password, timezone):
-                return redirect("/login#error=register_success")
+                return redirect("/login?error=register_success")
             else:
                 return "Error"
 
@@ -183,10 +183,6 @@ def edit_data():
         if night == "true":
             conditions.append("night")
         drive_id = request.form["id"]
-        # start_timestamp = time.mktime(time.strptime(f"{start_date} {start_time}", "%b %d, %Y %I:%M %p"))
-        # stop_timestamp = time.mktime(time.strptime(f"{start_date} {stop_time}", "%b %d, %Y %I:%M %p"))
-        # if start_timestamp > stop_timestamp:
-        #     stop_timestamp += timedelta(days=1).total_seconds()
         user_manage.update_drive(session["username"], drive_id, start_date, start_time, stop_time, conditions)
         return "Done"
 
@@ -245,6 +241,46 @@ def do_delete_account():
             session.clear()
             user_manage.remove_user(request.form["username"])
             return str(user_check.check_username(request.form["username"]))
+
+
+@app.route("/forgot_password")
+def forgot_password():
+    return render_template("ForgotPassword.html")
+
+
+@app.route("/do_request_forgot_password", methods=["GET", "POST"])
+def do_request_forgo_password():
+    if user_check.check_username(request.form["username"]):
+        if user_manage.forgot_password_send_email(request.form["username"]):
+            return redirect("/login?error=request_success")
+        else:
+            return redirect("/login?error=request_error")
+    else:
+        return redirect("/forgot_password?error=username")
+
+
+@app.route("/change_password/<string:username>/<string:token>")
+def change_password(username, token):
+    if user_get.get(username, "password_token") == token:
+        return render_template("ChangePassword.html", token=token, username=username)
+    else:
+        return redirect("/login?error=reset_error")
+
+
+@app.route("/do_change_password", methods=["GET", "POST"])
+def do_change_password():
+    if request.method == "POST":
+        token = request.form["token"]
+        username = request.form["username"]
+        password = request.form["password"]
+        repeat_password = request.form["password_repeat"]
+        if not password == repeat_password:
+            return redirect(user_get.get_change_password_error_link(username, token, "password_repeat"))
+        elif not user_get.get(username, "password_token") == token:
+            return redirect(user_get.get_change_password_error_link(username, token, "unknown"))
+        else:
+            user_manage.change_password(username, password)
+            return redirect("/login?error=change_success")
 
 
 @app.route("/verify/<string:username>/<string:token>")

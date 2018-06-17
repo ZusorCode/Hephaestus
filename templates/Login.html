@@ -35,6 +35,7 @@
                 </label>
             </p>
             <p>Don't have an account yet? <a href="/register">Register now</a></p>
+            <p><a href="/forgot_password">Forgot password</a></p>
             <button class="btn waves-effect waves-light green lighten-1" type="submit" name="action">Log in</button>
         </div>
     </div>
@@ -68,6 +69,34 @@
     <script>
         M.toast({
             html: 'Thanks for signing up! Please verify your account before logging in.',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "request_success" %}
+    <script>
+        M.toast({
+            html: 'We just sent you an email to reset your password!',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "request_error" %}
+    <script>
+        M.toast({
+            html: 'An unknown error occurred while trying to reset your password',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "reset_error" %}
+    <script>
+        M.toast({
+            html: 'An unknown error occurred while trying to reset your password',
+            displayLength: 5000
+        });
+    </script>
+{% elif error == "change_success" %}
+    <script>
+        M.toast({
+            html: 'Your password has been changed!',
             displayLength: 5000
         });
     </script>

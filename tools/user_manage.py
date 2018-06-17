@@ -105,6 +105,11 @@ def associate_token(username, token):
         users.update_one({"username": username}, {"$set": {"verify_token": token}})
 
 
+def associate_password_token(username, token):
+    if user_check.check_username(username):
+        users.update_one({"username": username}, {"$set": {"password_token": token}})
+
+
 def verify_user(username, token):
     if user_check.check_username(username):
         if user_get.get(username, "verify_token") == token:
@@ -114,3 +119,24 @@ def verify_user(username, token):
             return False
     else:
         return False
+
+
+def forgot_password_send_email(username):
+    if user_check.check_username(username):
+        return email_tool.send_forgot_password(username)
+    else:
+        return False
+
+
+def change_password(username, password):
+    if user_check.check_username(username):
+        password = password.encode()
+        password = bcrypt.hashpw(password, bcrypt.gensalt())
+        password = password.decode()
+        users.update_one({"username": username}, {"$set": {"password": password}})
+        remove_password_token(username)
+
+
+def remove_password_token(username):
+    if user_check.check_username(username):
+        users.update_one({"username": username}, {"$set": {"password_token": ""}})

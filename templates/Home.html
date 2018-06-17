@@ -66,7 +66,7 @@
     <div id="table">
     </div>
     <div class="fixed-action-btn">
-        <a class="btn-floating btn-large red" onclick="create_drive(); update_table()">
+        <a class="btn-floating btn-large red" onclick="create_drive()">
             <i class="material-icons">add</i>
         </a>
     </div>
@@ -238,10 +238,9 @@
     }
 
     function create_drive() {
-        $.post("/create_drive", {"username": "{{ username }}"})
-            .done(function () {
-                update_stats();
-            });
+        $.post("/create_drive", {"username": "{{ username }}"});
+        update_table();
+        update_stats();
     }
 
 

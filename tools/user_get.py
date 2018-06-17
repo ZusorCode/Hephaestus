@@ -93,3 +93,7 @@ def get_settings_prefill(username):
     return {"date_goal": time_manage.iso_utc_to_date(username, get(username, "date_goal")),
             "goal": get(username, "goal"),
             "night_goal": get(username, "night_goal")}
+
+
+def get_change_password_error_link(username, token, error):
+    return f"/change_password/{username}/{token}?error={error}"
